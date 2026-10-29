@@ -1,0 +1,127 @@
+# Source dataset for the comparison table in README.md.
+# Run `python render_table.py --write` after editing, `--check` in CI.
+#
+# The question this list answers is not "does the tool track Grok". Most
+# vendors put Grok somewhere on a features page. The question is which plan
+# actually turns Grok on, and how far that sits above the sticker price.
+#
+# entry_price   cheapest paid plan the vendor sells, any engine set
+# grok_price    cheapest plan, or plan plus add on, that includes Grok.
+#               null when the vendor does not publish that number.
+# grok_confirmed false when the vendor lists Grok in general but the pricing
+#               page does not name it on that specific plan. Ask before buying.
+# grok_premium  is NOT stored here. render_table.py computes it as
+#               grok_price minus entry_price, so the two cannot drift.
+#
+# Prices checked against live vendor pricing pages on 2026-10-29.
+# Row order after AIclicks follows grok_price, cheapest first, with
+# unpublished prices last.
+
+tools:
+  - name: AIclicks
+    url: https://aiclicks.io
+    currency: "$"
+    entry_price: 59
+    entry_plan: "Starter, monthly"
+    grok_price: 59
+    grok_plan: "Starter, Grok is one of the selectable models"
+    grok_confirmed: true
+    refresh: "Daily"
+    trial: "3 days, every plan"
+    best_for: "Teams that want Grok tracking plus a list of fixes on the entry plan"
+
+  - name: Rankscale
+    url: https://rankscale.ai
+    currency: "$"
+    entry_price: 17
+    entry_plan: "Essentials, billed yearly at $204"
+    grok_price: 17
+    grok_plan: "Essentials, 17+ engines on every tier, Grok named on the homepage only"
+    grok_confirmed: false
+    refresh: "Hourly to monthly, you pick"
+    trial: "Free trial on Pro"
+    best_for: "Fast moving categories that need checks more often than once a day"
+
+  - name: Mangools AI Search Watcher
+    url: https://mangools.com/ai-search-watcher
+    currency: "€"
+    entry_price: 37.70
+    entry_plan: "Basic bundle, billed yearly"
+    grok_price: 37.70
+    grok_plan: "Basic bundle, Grok in the default engine list"
+    grok_confirmed: true
+    refresh: "Not stated"
+    trial: "Free account, no card"
+    best_for: "SEO teams already paying for Mangools keyword tools"
+
+  - name: Cairrot
+    url: https://cairrot.com
+    currency: "$"
+    entry_price: 39
+    entry_plan: "Starter, ChatGPT and Perplexity only"
+    grok_price: 64
+    grok_plan: "Starter plus the Grok add on from $25"
+    grok_confirmed: true
+    refresh: "Not stated"
+    trial: "Free trial"
+    best_for: "Builders who want an ungated API on the cheapest plan"
+
+  - name: Rankability
+    url: https://www.rankability.com
+    currency: "$"
+    entry_price: 97
+    entry_plan: "Starter, monthly"
+    grok_price: 97
+    grok_plan: "Starter, same 11 platforms on every paid tier"
+    grok_confirmed: true
+    refresh: "Daily"
+    trial: "7 days, card required"
+    best_for: "Agencies that track and also produce content for clients"
+
+  - name: AthenaHQ
+    url: https://www.athenahq.ai
+    currency: "$"
+    entry_price: 0
+    entry_plan: "Essential, 5 engines without Grok"
+    grok_price: 295
+    grok_plan: "Starter, 3,600 credits across 11 models"
+    grok_confirmed: true
+    refresh: "Not stated"
+    trial: "Free Essential tier, no Grok"
+    best_for: "Teams that want GA4 and Search Console data next to Grok visibility"
+
+  - name: AI Rank Checker
+    url: https://www.airankchecker.net
+    currency: "$"
+    entry_price: 499
+    entry_plan: "Platform, 150 prompts, 5 platforms of your choice"
+    grok_price: 499
+    grok_plan: "Platform, Grok listed as an engine, choice of 5 not confirmed"
+    grok_confirmed: false
+    refresh: "Not stated"
+    trial: "None, demo only"
+    best_for: "Buyers who want a done for you service tier at $899"
+
+  - name: Orchly
+    url: https://orchly.ai
+    currency: "$"
+    entry_price: 49
+    entry_plan: "Essential, monthly"
+    grok_price: null
+    grok_plan: "Any plan plus a paid Grok add on, price not published"
+    grok_confirmed: true
+    refresh: "Daily"
+    trial: "7 days, every plan"
+    best_for: "Content teams that want article writing in the same tool"
+
+  - name: Peec AI
+    url: https://peec.ai
+    currency: "€"
+    entry_price: 85
+    entry_plan: "Starter, monthly, 3 models"
+    grok_price: null
+    grok_plan: "Enterprise only, custom annual pricing"
+    grok_confirmed: true
+    refresh: "Daily"
+    trial: "Not stated"
+    best_for: "Brands that only need Grok later and want clean reports on the other engines now"
