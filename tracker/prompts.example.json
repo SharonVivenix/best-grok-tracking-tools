@@ -1,0 +1,19 @@
+{
+  "_comment": "Fictional brands for the demo. Replace with your own brand, aliases, domains and competitors.",
+  "brand": {
+    "name": "Northwind Metrics",
+    "names": ["Northwind Metrics", "Northwind"],
+    "domains": ["northwindmetrics.example"]
+  },
+  "competitors": [
+    {"name": "Fabrikam Rank", "names": ["Fabrikam Rank", "Fabrikam"], "domains": ["fabrikamrank.example"]},
+    {"name": "Contoso Signals", "names": ["Contoso Signals", "Contoso"], "domains": ["contososignals.example"]},
+    {"name": "Tailspin SEO", "names": ["Tailspin SEO", "Tailspin"], "domains": ["tailspinseo.example"]}
+  ],
+  "prompts": [
+    {"id": "best-tracker", "text": "What are the best tools to track how my brand shows up in AI answers?"},
+    {"id": "grok-tracker", "text": "Which rank tracker can monitor brand mentions inside Grok?"},
+    {"id": "cheap-tracker", "text": "Cheapest AI visibility tracker for a small marketing team?"},
+    {"id": "agency-tracker", "text": "Best AI search monitoring platform for an SEO agency with many clients?"}
+  ]
+}

@@ -8,7 +8,23 @@
 
 Open the pricing page of almost any AI visibility vendor and Grok is there, usually in a row of small engine logos. Click through to the plan you can actually afford and it often disappears. Of the nine tools in this repo, three confirm Grok on the plan you see first and two more probably include it. The other four move it to an add on, a tier several hundred dollars higher, or an Enterprise contract with no public price. That gap is the whole reason this list exists. Most roundups of the [best grok rank tracker tools](https://aiclicks.io/blog/best-grok-tracking-tools) quote the sticker price. This one quotes the price of the plan that switches Grok on, and then subtracts.
 
-Every number lives in [tools.yaml](tools.yaml). [render_table.py](render_table.py) builds the table below from it and computes the Grok premium column itself, so a corrected price in the data can never leave a stale total in the README. Prices were checked against each vendor's live pricing page on 29 October 2026.
+The repo has two halves. The first is data: every price lives in [tools.yaml](tools.yaml), and [render_table.py](render_table.py) builds the table below from it and computes the Grok premium column itself, so a corrected price can never leave a stale total in the README. Prices were checked against each vendor's live pricing page on 29 October 2026. The second half is code: a small, dependency free Python tracker in [tracker/](tracker/) that sends your own prompts to Grok through the xAI Responses API with web and X search switched on, logs every answer and its sources, and reports mention rate, citation rate, share of voice and how much each prompt swings from day to day. Use it to sanity check any vendor on this list, or to run a few dozen prompts yourself before paying anyone.
+
+```
+.
+├── tools.yaml                 vendor dataset, one entry per tool
+├── render_table.py            tools.yaml -> README table, --check, --budget
+├── tracker/
+│   ├── track.py               prompts -> POST /v1/responses -> runs.jsonl
+│   ├── report.py              runs.jsonl -> brand / prompt / domains / day views
+│   ├── parse.py               pure helpers: text, citations, X vs web, mentions
+│   └── prompts.example.json   brand, aliases, domains, competitors, prompts
+├── examples/
+│   ├── sample-response.json   Responses API shape the parser is tested against
+│   └── sample-runs.jsonl      140 synthetic answers, fictional brands, for demos
+├── tests/test_tracker.py      unittest, no network
+└── .github/workflows/         table check, tracker tests on 3.9 and 3.12, link check
+```
 
 ## Why Grok needs its own line item
 
@@ -44,6 +60,107 @@ To see which tools fit a monthly budget once Grok is actually included:
 pip install pyyaml
 python render_table.py --budget 100
 ```
+
+## Build your own Grok rank tracker
+
+Every paid tool above does roughly the same thing under the hood: send a fixed prompt to Grok many times, keep the answer and its sources, and count. The tracker in this repo does that in about 350 lines of standard library Python, so you can see exactly what a "Grok visibility score" is made of.
+
+```mermaid
+flowchart LR
+    A[prompts.example.json] --> B[track.py]
+    B -->|POST /v1/responses<br/>tools: web_search, x_search| C[(xAI API<br/>grok-4.7)]
+    C -->|output_text, url_citation annotations,<br/>citations list| B
+    B -->|one JSON line per answer| D[(runs.jsonl)]
+    D --> E[report.py]
+    E --> F[brand: mention, citation, share of voice]
+    E --> G[prompt: swing in pp, X source share]
+    E --> H[domains: most cited hosts, X vs web]
+```
+
+### 1. Describe your brand and prompts
+
+Copy [tracker/prompts.example.json](tracker/prompts.example.json) and edit it. `names` holds every spelling a mention can take, `domains` decides what counts as a citation of your site, and each prompt gets a stable `id` so history lines up across runs.
+
+```json
+{
+  "brand": {"name": "Northwind Metrics", "names": ["Northwind Metrics", "Northwind"], "domains": ["northwindmetrics.example"]},
+  "competitors": [{"name": "Fabrikam Rank", "names": ["Fabrikam Rank", "Fabrikam"], "domains": ["fabrikamrank.example"]}],
+  "prompts": [{"id": "grok-tracker", "text": "Which rank tracker can monitor brand mentions inside Grok?"}]
+}
+```
+
+Use prompts a buyer would type, the kind that come back as a list of vendors. Definitional prompts ("what is AI visibility") rarely name brands and add noise.
+
+### 2. Collect answers
+
+```bash
+export XAI_API_KEY=your_key
+python tracker/track.py --config my-brand.json --runs 5          # 5 samples per prompt
+python tracker/track.py --config my-brand.json --dry-run         # print payloads, spend nothing
+python tracker/track.py --config my-brand.json --no-x-search     # web only, for an A/B against X
+```
+
+Each call is the request shape from xAI's [search tools guide](https://docs.x.ai/docs/guides/tools/search-tools):
+
+```json
+{
+  "model": "grok-4.7",
+  "input": [{"role": "user", "content": "Which rank tracker can monitor brand mentions inside Grok?"}],
+  "tools": [{"type": "web_search"}, {"type": "x_search"}]
+}
+```
+
+`track.py` retries on 429 and 5xx with exponential backoff and appends one line per answer to `runs.jsonl`:
+
+| Field | Source in the API response | Used for |
+| --- | --- | --- |
+| `text` | `output[].content[]` blocks of type `output_text` | mention detection |
+| `citations` | top level `citations`, falling back to `url_citation` annotations | citation rate, domains, X share |
+| `inline` | `[[N]](url)` links inside the text | sources a reader actually sees |
+| `ts`, `prompt_id`, `run` | added by the script | daily swing, per prompt views |
+| `usage` | `usage` | cost tracking |
+
+Per xAI's [citations documentation](https://docs.x.ai/developers/tools/citations), the top level list holds every source the agent touched while searching, which is wider than what the answer cites inline. The script keeps both so you can choose the stricter definition.
+
+Run it from cron once a day. Grok writes a fresh answer per call, so one sample per prompt is an anecdote. Five a day for a week is a trend.
+
+### 3. Report
+
+```bash
+python tracker/report.py runs.jsonl --config my-brand.json              # brand view
+python tracker/report.py runs.jsonl --config my-brand.json --by prompt
+python tracker/report.py runs.jsonl --config my-brand.json --by domains --format csv
+```
+
+Output on the bundled synthetic log (`examples/sample-runs.jsonl`, fictional brands):
+
+```
+| brand             | answers | mention_rate | citation_rate | share_of_voice |
+| Northwind Metrics | 140     | 54.3         | 21.4          | 25.3           |
+| Fabrikam Rank     | 140     | 61.4         | 30.0          | 28.7           |
+| Contoso Signals   | 140     | 50.7         | 19.3          | 23.7           |
+| Tailspin SEO      | 140     | 47.9         | 20.7          | 22.3           |
+
+| prompt_id      | answers | mention_rate | swing_pp | x_source_share |
+| grok-tracker   | 35      | 40.0         | 33.8     | 46.2           |
+| cheap-tracker  | 35      | 20.0         | 21.4     | 11.0           |
+| agency-tracker | 35      | 77.1         | 16.7     | 14.2           |
+| best-tracker   | 35      | 80.0         | 15.1     | 16.7           |
+```
+
+How each number is defined:
+
+- **mention_rate**: answers that name the brand, divided by all answers. Matching is case insensitive and whole word, and URLs inside `[[N]](url)` markers are stripped first so a domain in a link never counts as a mention.
+- **citation_rate**: answers whose `citations` include a URL on one of the brand's `domains`, subdomains included.
+- **share_of_voice**: the brand's mentions divided by mentions of every tracked brand.
+- **swing_pp**: population standard deviation of the daily mention rate, in percentage points. This is the Grok specific number. In the sample, `grok-tracker` draws 46% of its sources from X and swings about twice as much as `best-tracker` and `agency-tracker`, which lean on the open web.
+- **x_source_share**: share of a prompt's cited URLs hosted on x.com or twitter.com.
+
+A prompt with high swing and high X share is one where a single thread can put you in or take you out. That is where daily or hourly refresh from the vendors above earns its price, and where a weekly tool will mislead you.
+
+### What this script does not do
+
+It calls the API, not the consumer Grok app, so answers can differ from what a logged in user sees with their own history and location. It tracks one model at a time. It has no dashboard, no alerting and no recommendations. Those gaps are what the paid tools charge for, and the comparison table is there to help you decide which of them is worth it.
 
 ## The tools
 

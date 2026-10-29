@@ -23,6 +23,27 @@ jobs:
       - name: Check table
         run: python render_table.py --check
 
+  tracker:
+    name: Tracker tests on Python ${{ matrix.python }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.9", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Unit tests, stdlib only
+        run: python -m unittest discover -s tests -v
+      - name: Report runs on the sample log
+        run: |
+          for v in brand prompt domains day; do
+            python tracker/report.py examples/sample-runs.jsonl --config tracker/prompts.example.json --by $v
+          done
+      - name: Dry run builds valid payloads
+        run: python tracker/track.py --config tracker/prompts.example.json --dry-run --runs 2
+
   links:
     name: Links resolve
     runs-on: ubuntu-latest

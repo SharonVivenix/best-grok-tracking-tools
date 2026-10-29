@@ -29,4 +29,9 @@ python render_table.py              # preview
 python render_table.py --write      # write the table into README.md
 python render_table.py --check      # what CI runs
 python render_table.py --budget 100 # Grok plans at or under a monthly budget
+python -m unittest discover -s tests # tracker tests, no network, no API key
 ```
+
+## Tracker changes
+
+The tracker under `tracker/` stays standard library only and must run on Python 3.9. Parse logic belongs in `parse.py` as pure functions with a test in `tests/test_tracker.py`. If xAI changes the Responses API shape, update `examples/sample-response.json` from the official docs first, then the parser.

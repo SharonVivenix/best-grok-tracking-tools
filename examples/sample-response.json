@@ -1,0 +1,64 @@
+{
+  "id": "resp_example",
+  "object": "response",
+  "model": "grok-4.7",
+  "status": "completed",
+  "output": [
+    {
+      "type": "web_search_call",
+      "id": "ws_1",
+      "status": "completed"
+    },
+    {
+      "type": "x_search_call",
+      "id": "xs_1",
+      "status": "completed"
+    },
+    {
+      "type": "message",
+      "id": "msg_1",
+      "role": "assistant",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "logprobs": [],
+          "text": "For Grok specifically, Fabrikam Rank and Northwind Metrics come up most.[[1]](https://seoweekly.example/best-ai-trackers)[[2]](https://x.com/i/status/1981000000000000001) Contoso is cheaper but lighter on citations.[[3]](https://www.contososignals.example/pricing)",
+          "annotations": [
+            {
+              "type": "url_citation",
+              "url": "https://seoweekly.example/best-ai-trackers",
+              "start_index": 72,
+              "end_index": 121,
+              "title": "1"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://x.com/i/status/1981000000000000001",
+              "start_index": 121,
+              "end_index": 171,
+              "title": "2"
+            },
+            {
+              "type": "url_citation",
+              "url": "https://www.contososignals.example/pricing",
+              "start_index": 222,
+              "end_index": 271,
+              "title": "3"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "citations": [
+    "https://seoweekly.example/best-ai-trackers",
+    "https://x.com/i/status/1981000000000000001",
+    "https://www.contososignals.example/pricing",
+    "https://reddit.com/r/SEO/comments/abc123"
+  ],
+  "usage": {
+    "input_tokens": 1200,
+    "output_tokens": 180
+  }
+}
